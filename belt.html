@@ -252,11 +252,10 @@
 
   <script type="text/javascript">
       document.getElementById('announce');
-      console.log("현재아이상태 ...ok");
-      document.getElementById('announce').innerHTML="<p><img src='../img/belt.png' width='50%' height='50%' ></p>\
-      <p>착용중!</p>";
+      console.log("연결중...");
+      document.getElementById('announce').innerHTML=" <p>정보를 불러오는 중...</p>";
 
-    var functiongroup = new Array();
+      var functiongroup = new Array();
     var functions;
     class Sensor {
       constructor(name, param, value, target) {
@@ -333,6 +332,10 @@
                   document.getElementById('announce').innerHTML="<p><img src='../img/warning.png' width='50%' height='50%' ></p>\
                   <p>미착용!<p>\
           <p>아이의 상태를 확인하세요!!</p>";
+      }
+      else{
+          document.getElementById('announce').innerHTML="<p><img src='../img/belt.png' width='50%' height='50%' ></p>\
+      <p>착용중!</p>";
       }
   }
     function onMessageDelivered(){

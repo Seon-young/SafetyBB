@@ -1,0 +1,576 @@
+<?
+  session_start();
+  require_once '../server/dbconnect.html';
+?>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css">
+  <!-- Bootstrap core CSS -->
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <!-- Material Design Bootstrap -->
+  <link href="../css/mdb.min.css" rel="stylesheet">
+  <!-- Your custom styles (optional) -->
+  <link href="../css/style.css" rel="stylesheet">
+
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.js"
+  integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+  crossorigin="anonymous"></script>
+
+  <script src="../js/sweetalert.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="../js/sweetalert.css">
+    <link rel="shortcut icon" href="../img/bus.png">
+  <title>SafetyBB</title>
+  <style media="screen">
+  @import url(http://fonts.googleapis.com/earlyaccess/hanna.css);
+  html,body *{
+    font-family: 'Hanna', serif;
+  }
+      .hum, .tem{
+        margin:2.5px;
+        width: 100px;
+      }
+      .col{
+        margin:4px;
+      }
+      .col-md-4 > div{
+        border-radius: 4%;
+      }
+  </style>
+</head>
+
+<body class=" animated slideInUp">
+  <!--Navbar-->
+  <!--Modal: Login Form-->
+<div class="modal fade" id="modalLogin" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog cascading-modal" role="document">
+        <!--Content-->
+        <div class="modal-content">
+
+            <!--Header-->
+            <div class="modal-header light-blue darken-3 white-text">
+                <h4 class="title"><i class="fa fa-user"></i> 로그인하기</h4>
+            </div>
+            <!--Body-->
+            <div class="modal-body">
+                <div class="md-form form-sm">
+                    <i class="fa fa-envelope prefix"></i>
+                    <input type="text" id="id" class="form-control">
+                    <label for="form30">아이디</label>
+                </div>
+
+                <div class="md-form form-sm">
+                    <i class="fa fa-lock prefix"></i>
+                    <input type="password" id="pwd" class="form-control">
+                    <label for="form31">비밀번호</label>
+                </div>
+
+                <div class="text-center mt-2">
+                    <button class="btn btn-info login-btn">로그인 <i class="fa fa-sign-in ml-1"></i></button>
+                </div>
+            </div>
+            <!--Footer-->
+            <div class="modal-footer">
+                <div class="options text-center text-md-right mt-1">
+                    <p><a onclick="$('#modalLogin').modal('toggle');$('#modalRegister').modal('toggle');">회원가입</a></p>
+                </div>
+                <button type="button" class="btn btn-outline-info waves-effect ml-auto" data-dismiss="modal">닫기 <i class="fa fa-times-circle ml-1"></i></button>
+            </div>
+        </div>
+        <!--/.Content-->
+    </div>
+</div>
+<!--Modal: Login Form-->
+
+<!--Modal: Register Form-->
+<div class="modal fade" id="modalRegister" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog cascading-modal" role="document">
+        <!--Content-->
+        <div class="modal-content">
+
+            <!--Header-->
+            <div class="modal-header light-blue darken-3 white-text">
+                <h4 class="title"><i class="fa fa-user-plus"></i> 회원가입하기</h4>
+            </div>
+            <!--Body-->
+            <div class="modal-body">
+                <div class="md-form form-sm">
+                    <i class="fa fa-envelope prefix"></i>
+                    <input type="text" id="rid" class="form-control">
+                    <label for="form32">아이디</label>
+                </div>
+
+                <div class="md-form form-sm">
+                    <i class="fa fa-lock prefix"></i>
+                    <input type="password" id="rpwd" class="form-control">
+                    <label for="form33">비밀번호</label>
+                </div>
+
+                <div class="md-form form-sm">
+                    <i class="fa fa-lock prefix"></i>
+                    <input type="password" id="rpwdc" class="form-control">
+                    <label for="form34">비밀번호 확인</label>
+                </div>
+
+                <div class="text-center mt-2">
+                    <button class="btn btn-info register-btn">회원가입 <i class="fa fa-sign-in ml-1"></i></button>
+                </div>
+
+            </div>
+            <!--Footer-->
+            <div class="modal-footer">
+                <div class="options text-center text-md-right mt-1">
+                    <p><a onclick="$('#modalRegister').modal('toggle');$('#modalLogin').modal('toggle');">로그인</a></p>
+                </div>
+                <button type="button" class="btn btn-outline-info waves-effect ml-auto" data-dismiss="modal">닫기 <i class="fa fa-times-circle ml-1"></i></button>
+            </div>
+        </div>
+        <!--/.Content-->
+    </div>
+</div>
+<!--Modal: Register Form-->
+
+  <!--Navbar-->
+  <nav class="navbar navbar-toggleable-md navbar-dark bg-primary" style="box-shadow:none;border:solid #6cb0ff; border-width:0 0 1px 0">
+      <div class="container">
+          <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNav1" aria-controls="navbarNav1" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">
+              <strong>SafetyBB</strong>
+          </a>
+          <div class="collapse navbar-collapse" id="navbarNav1">
+              <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                      <a class="nav-link" href="../index.html">Home <span class="sr-only">(current)</span></a>
+                  </li>
+                  <?
+                    if(isset($_SESSION['id'])){
+                  ?>
+                  <li class="nav-item">
+                      <a class="nav-link" href="../add.html">MyPage</a>
+                  </li>
+                    <li class="nav-item">
+                        <a class="nav-link logout-btn">로그아웃</a>
+                    </li>
+                  <?
+                    }
+                    else{
+                  ?>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="$('#modalLogin').modal('toggle');">로그인</a>
+                    </li>
+                  <?
+                    }
+                  ?>
+              </ul>
+          </div>
+      </div>
+  </nav>
+<div class="flex-center" style="background:#2196F3;height:200px;margin-bottom:32px">
+  <p class="" style="color:white;font-size:3em">차량 내 온도 확인</p>
+</div>
+
+  <div class="container">
+    <div class="" style="border:1px solid #eee;padding:16px;margin-bottom:8px;">
+        <!--<input type="button" onclick="announce_t()" value="here" >-->
+      <div class="row">
+          <!--<div class="col-lg-6 text-center" >
+              <p> <img src="../img/5.png" width="50%" height="50%" ></p>
+              <p>1단계입니다! 차량 내 온도가 쾌적합니다.</p>
+          </div>-->
+          <div class="col-lg-6 text-center" id="announce" ></div>
+          <div class="col-lg-6 ">
+              <canvas id="temChart"></canvas>
+              <p class="text-center" style="" id="now_temp"> 현재 온도 </p>
+          </div>
+        <div class="col">
+        </div>
+      </div>
+    </div>
+    <div class="flex-center" style="height:40px;margin-bottom:32px">
+      <p class="" style=""><차량 내 온도 단계></p>
+    </div>
+    <input type="hidden" name="" value="0" class="tem">
+      <div class="" style="border:1px solid #eee;padding:16px;margin-bottom:8px;">
+          <div class="row text-center">
+              <div class="col text-center"><!--20이하-->
+                  <p> <img src="../img/5.png" width="50%" height="50%" ></p>
+                  <p>쾌적</p><p>20도 이하</p>
+              </div>
+              <div class="col text-center" ><!--20이상 25이하-->
+                  <p> <img src="../img/4.png" width="50%" height="50%" ></p>
+                  <p>보통</p><p>20 ~ 25도</p>
+              </div>
+              <div class="col text-center" ><!--25이상 30이하-->
+                  <p> <img src="../img/3.png" width="50%" height="50%" ></p>
+                  <p>확인</p><p>25 ~ 30도</p>
+              </div>
+              <div class="col text-center" ><!--30이상 35이하-->
+                  <p> <img src="../img/2.png" width="50%" height="50%" ></p>
+                  <p>주의</p><p>30 ~ 35도</p>
+              </div>
+              <div class="col text-center" > <!--35이상-->
+                  <p> <img src="../img/1.png" width="50%" height="50%" ></p>
+                  <p>긴급</p><p>35도 이상</p>
+              </div>
+              <div class="col">
+              </div>
+          </div>
+      </div>
+  </div>
+  <!--Footer-->
+<footer class="page-footer blue center-on-small-only">
+
+    <!--Footer Links-->
+    <div class="container-fluid">
+        <div class="row">
+
+            <!--First column-->
+            <div class="col-md-6">
+                <h5 class="title">여름철 차량 내 온도를 주의하세요</h5>
+                <p>Here you can use rows and columns here to organize your footer content.</p>
+            </div>
+            <!--/.First column-->
+
+            <!--Second column-->
+            <div class="col-md-6">
+                <h5 class="title">문의하기</h5>
+                <ul>
+                    <li><a href="#!">FAQ</a></li>
+                    <li><a href="#!">Q&A</a></li>
+                </ul>
+            </div>
+            <!--/.Second column-->
+        </div>
+    </div>
+    <!--/.Footer Links-->
+
+    <!--Copyright-->
+    <div class="footer-copyright">
+        <div class="container-fluid">
+            © 2017 Copyright: SafetyBB
+        </div>
+    </div>
+    <!--/.Copyright-->
+
+</footer>
+<!--/.Footer-->
+
+  <script type="text/javascript">
+  var temdata = {
+  labels: [1,2,3,4,5,6,7,8,9,10],
+  datasets: [
+      {
+          label: "My First dataset",
+          fillColor: "rgba(220,220,220,0.2)",
+          strokeColor: "rgba(220,220,220,1)",
+          pointColor: "rgba(220,220,220,1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba(220,220,220,1)",
+          data: []
+      }
+      ]
+  };
+  var option = {
+    responsive: true,
+  };
+
+  $(function () {
+    var ctx = document.getElementById("temChart").getContext('2d');
+    var myLineChart = new Chart(ctx).Line(temdata, option);
+  });
+  function clearCanvas(context, canvas) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    var w = canvas.width;
+    canvas.width = 1;
+    canvas.width = w;
+  }
+  function reChart(param,type){
+    var ctx=document.getElementById(param).getContext('2d');
+    clearCanvas(ctx, document.getElementById(param));
+    // ctx.beginPath();
+    switch (type) {
+      case "temdata":
+        var myLineChart = new Chart(ctx).Line(temdata, option);
+        break;
+      default:
+    }
+    // ctx.closePath();
+  }
+   /* $('canvas').mouseenter(function(){
+      $(this).animateCss('pulse');
+    })*/
+    var functiongroup = new Array();
+    var functions;
+    class Sensor {
+      constructor(name, param, value, target) {
+        this.name=name;
+        this.param=param;
+        this.value=value;
+        this.target=target;
+      }
+    }
+
+    // Create a client instance
+    //client = new Paho.MQTT.Client("host", port, "client_id");
+    client = new Paho.MQTT.Client("m11.cloudmqtt.com", 31541, "web_" + parseInt(Math.random() * 100, 10));
+    // set callback handlers
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.onMessageDelivered = onMessageDelivered;
+    var options = {
+      useSSL: true,
+      userName: "root",
+      password: "root",
+      onSuccess: onConnect,
+      onFailure: doFail
+    }
+    // connect the client
+    client.connect(options);
+    // called when the client connects
+    function onConnect() {
+      // Once a connection has been made, make a subscription and send a message.
+      console.log("onConnect");
+      client.subscribe("root/Temperature");
+    }
+    function doFail(e) {
+      console.log(e);
+    }
+
+    // called when the client loses its connection
+    function onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        console.log("onConnectionLost:" + responseObject.errorMessage);
+      }
+    }
+
+    var recent_temp;
+    function onMessageArrived(message) {
+      console.log(message.destinationName);
+      if(message.destinationName=="root/Temperature"){
+        $(".tem").val(message.payloadString);
+        if(temdata["datasets"][0]["data"].length==10){
+            temdata["datasets"][0]["data"].shift();
+            temdata["datasets"][0]["data"].push(message.payloadString);
+            reChart("temChart","temdata");
+        }
+        else{
+          temdata["datasets"][0]["data"].push(message.payloadString);
+          reChart("temChart","temdata");
+        }
+      }
+      var str = message.destinationName;
+      str=str.substring(12,);
+      chk(str);
+
+      recent_temp = Number(message.payloadString);
+      updateannounce();
+    }// called when a message arrives
+  function updateannounce(){
+      $.ajax({
+          url:"time.html",
+          type:"post",
+          success:function(data){
+              if(data=="success"){
+                  console.log("here ...");
+                  $(".announce");
+                  announce_t();
+              }
+          }
+      });
+  }
+  function announce_t(){
+      document.getElementById('announce');
+      var announcement= recent_temp;
+      console.log("현재온도 ..."+announcement);
+      document.getElementById('now_temp').innerHTML="<p>현재온도 :  "+recent_temp+"도 </p>";
+      if(announcement <= 20) {
+                  document.getElementById('announce').innerHTML="<p><img src='../img/5.png' width='50%' height='50%' ></p>\
+          <p>1단계입니다! 차량 내 온도가 쾌적합니다.</p>";
+                  return 1;}
+      else if(announcement <= 25) {
+                  document.getElementById('announce').innerHTML='<p><img src="../img/4.png" width="50%"  height="50%" ></p>\
+              <p>2단계입니다! 차량 내 온도가 보통입니다.</p>';
+                  return 2;}
+      else if(announcement <= 30) {
+                  document.getElementById('announce').innerHTML="<p><img src='../img/3.png' width='50%' height='50%' ></p>\
+              <p>3단계입니다! 온도가 뜨겁습니다. 아이의 상태를 확인하세요.</p>";
+                  return 3;}
+      else if(announcement <= 35) {
+                  document.getElementById('announce').innerHTML="<p><img src='../img/2.png' width='50%' height='50%' ></p>\
+              <p>4단계입니다! 차량 내 온도가 많이 뜨겁습니다. 아이를 혼자 두지 마십시오.</p>";
+                  return 4;}
+      else {
+                  document.getElementById('announce').innerHTML="<p><img src='../img/1.png' width='50%' height='50%' ></p>\
+              <p>5단계입니다! 긴급입니다!!차량의 온도를 낮춰주세요.</p>";
+                  return 5;}
+  }
+    function onMessageDelivered(){
+    }
+
+    function chk(sensor){
+      for(var items in functiongroup){
+        chk_detail(functiongroup[items], sensor);
+      }
+    }
+    function chk_detail(params, sensor){
+      var isContain = false;
+      for(var i in params){
+        if(params[i].name==sensor) isContain=true;
+      }
+      if(!isContain) return;
+      for(var i in params){
+        if(!calc(params[i].name,params[i].param,params[i].value)) return;
+        var tar = params[i].target;
+      }
+      message = new Paho.MQTT.Message(tar);
+      message.destinationName = "motor";
+      client.send(message);
+    }
+    $(document).ready(function(){
+      var num=1;
+      $(".addModule").on("click",function(){
+        num+=1;
+          $(".module").append('\
+          <div class="row animated fadeInRight">\
+            <select class="sensor'+num+' col" name="" style="color:#2196F3">\
+              <option value="tem">온도센서</option>\
+            </select>\
+            <select class="param'+num+' col" name="" style="color:#2196F3">\
+              <option value="<"><</option>\
+              <option value="=">=</option>\
+              <option value=">">></option>\
+            </select>\
+            <input type="text" class="value'+num+' col" name="" value="" style="color:#2196F3">\
+          </div>\
+          ');
+      });
+
+      $(".save").on("click",function(){
+        var functions = new Array();
+        for(var i=1; i<num+1; i++){
+          var tar = new Sensor($(".sensor"+i).val(),$(".param"+i).val(),$(".value"+i).val(),$(".target").val());
+          functions.push(tar);
+        }
+        functiongroup.push(functions);
+        save();
+      });
+      $.ajax({
+        url:"../server/alarm.html",//데이터를 전송할 파일
+        type:"POST",//전송 방식
+        data:{//보낼 데이터 key:value형식의 맵
+          condition:"get"
+        },
+        success: function(data){//ajax전송 후 성공 응답을 받았을 시, 이때 data는 대상 php파일에서 echo로 출력한 값
+          var result = JSON.parse(data);
+          var prev="";
+          var cur="";
+          var functions = new Array();
+          for(var i=0; i<result.length;i+=5){
+            cur=result[i];
+            if(prev!=cur){
+              if(functions!="")
+                functiongroup.push(functions);
+              functions = new Array();
+            }
+            functions.push(new Sensor(result[i+1],result[i+2],result[i+3],result[i+4]));
+            prev=cur;
+          }
+          functiongroup.push(functions);
+          console.log(result);
+        },
+      error: function(){
+          swal("에러 발생!","잠시후 다시 시도해 주세요.","error");
+        }
+      });
+    });
+
+  $(".login-btn").on("click",function(){
+      $.ajax({
+        url:"../server/login.html",//데이터를 전송할 파일
+        type:"POST",//전송 방식
+        data:{//보낼 데이터 key:value형식의 맵
+          id:$("#id").val(),
+          pwd :$("#pwd").val()
+        },
+        success: function(data){//ajax전송 후 성공 응답을 받았을 시, 이때 data는 대상 php파일에서 echo로 출력한 값
+          if(data=="success"){
+            location.href="../index.html";
+            }
+          else{
+            swal("",data,"error");
+          }
+        },
+    error: function(){
+        swal("에러 발생!","잠시후 다시 시도해 주세요.","error");
+      }
+    });
+  });
+  $(".register-btn").on("click",function(){
+    if($("#rpwd").val()==$("#rpwdc").val()){
+        $.ajax({
+          url:"../server/register.html",//데이터를 전송할 파일
+          type:"POST",//전송 방식
+          data:{//보낼 데이터 key:value형식의 맵
+            id:$("#rid").val(),
+            pwd :$("#rpwd").val(),
+          },
+          success: function(data){//ajax전송 후 성공 응답을 받았을 시, 이때 data는 대상 php파일에서 echo로 출력한 값
+            if(data=="success"){
+              swal({
+                title: "회원가입 성공!",
+                text: "회원가입이 성공적으로 완료되었습니다.",
+                type: "success"
+              },
+              function(){
+                swal("Deleted!", "Your imaginary file has been deleted.", "success");
+                location.href="../index.html";
+              });
+              }
+            else{
+              swal("",data,"error");
+            }
+          },
+      error: function(){
+          swal("에러 발생!","잠시후 다시 시도해 주세요.","error");
+        }
+      });
+    }
+    else{
+        swal("","비밀번호와 비밀번호 확인이 같지 않습니다.","error");
+    }
+  });
+  $(".logout-btn").on("click",function(){
+      $.ajax({
+        url:"../server/logout.html",//데이터를 전송할 파일
+        type:"POST",//전송 방식
+        data:{//보낼 데이터 key:value형식의 맵
+        },
+        success: function(data){//ajax전송 후 성공 응답을 받았을 시, 이때 data는 대상 php파일에서 echo로 출력한 값
+            location.href="../index.html";
+        },
+    error: function(){
+        swal("에러 발생!","잠시후 다시 시도해 주세요.","error");
+      }
+    });
+  });
+  </script>
+  <!-- Bootstrap tooltips -->
+  <script type="text/javascript" src="../js/tether.min.js"></script>
+  <!-- Bootstrap core JavaScript -->
+  <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+  <!-- MDB core JavaScript -->
+  <script type="text/javascript" src="../js/mdb.min.js"></script>
+</body>
+
+</html>

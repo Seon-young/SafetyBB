@@ -200,13 +200,17 @@
     <input type="hidden" name="" value="0" >
       <div class="" style="border:1px solid #eee;padding:16px;margin-bottom:8px;">
           <div class="row text-center">
-              <div class="col-sm-6 text-center"><!--20이하-->
+              <div class="col-sm-4 text-center"><!--20이하-->
                   <p><h5>< 착용 ></h5></p><p>아이가 안전벨트를 착용했을 때</p>
                   <p> <img src="../img/belt.png" width="50%" height="50%" ></p>
               </div>
-              <div class="col-sm-6 text-center" ><!--20이상 25이하-->
+              <div class="col-sm-4 text-center" ><!--20이상 25이하-->
                   <p><h5>< 미착용 ></h5></p><p>아이가 안전벨트를 착용하지 않았을 때</p>
                   <p> <img src="../img/warning.png" width="50%" height="50%" ></p>
+              </div>
+              <div class="col-sm-4 text-center" ><!--20이상 25이하-->
+                  <p><h5>< 미측정 ></h5></p><p>아이가 이동 중인 차량 안이 아닐 때</p>
+                  <p> <img src="../img/girl_green.ico" width="50%" height="50%" ></p>
               </div>
               <div class="col">
               </div>
@@ -333,9 +337,16 @@
                   <p>미착용!<p>\
           <p>아이의 상태를 확인하세요!!</p>";
       }
-      else{
+      else if(announcement=="on"){
           document.getElementById('announce').innerHTML="<p><img src='../img/belt.png' width='50%' height='50%' ></p>\
       <p>착용중!</p>";
+      }
+      else if(announcement=="nocar"){
+          document.getElementById('announce').innerHTML="<p><img src='../img/girl_green.ico' width='50%' height='50%' ></p>\
+      <p>미측정</p>";
+      }
+      else{
+          document.getElementById('announce').innerHTML="<p>error</p>";
       }
   }
     function onMessageDelivered(){

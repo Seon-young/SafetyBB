@@ -1,0 +1,49 @@
+<doctype html>
+<html>
+  <head>
+    <title>정보 기입 창</title>
+  </head>
+  <body>
+    <form name="join">
+      <h1>용도와 집주소를 입력하세요</h1>
+      <table border="1">
+        <tr>
+          <td><center>타입</center></td>
+         <td>
+           <center>
+             <select id = "Customertype" name = "Customertype">
+               <option>구분</<option>
+                 <option value="1">학부모</option>
+                 <option value="2">인솔자</option>
+            </select>
+           </center>
+         </td>
+        </tr>
+        <tr>
+          <td>부모의 주소(도로명주소)</td>
+          <td><input id="address" type="text" size="30" maxlength="30"></td>
+        </tr>
+      </table>
+    </form>
+   <input id="submitBtn" type="button" value="submit" method=post onclick="submitClick()"> <input type="reset" value="rewrite">
+   <input type="button" value="GPS" onClick="window.open('test.html')">
+
+</body>
+</html>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.1.5/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyCWOhjgubSMNEavwmvC4QPNZOuzZ63Hyb4",
+    authDomain: "safetybb-65f64.firebaseapp.com",
+    databaseURL: "https://safetybb-65f64.firebaseio.com",
+    projectId: "safetybb-65f64",
+    storageBucket: "safetybb-65f64.appspot.com",
+    messagingSenderId: "909521276736"
+  };
+  firebase.initializeApp(config);
+</script>
+<script src="index.js"></script>

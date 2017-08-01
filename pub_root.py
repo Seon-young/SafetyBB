@@ -2,6 +2,8 @@ import RPi.GPIO as gpio
 import dht11
 import paho.mqtt.client as mqtt # MQTT Header
 import time # Hearder for 'sleep()'
+#import pub_root_GPS
+import pub_root_gps
 
 # initialize GPIO Temperature 
 temperature = 0
@@ -96,7 +98,9 @@ try:
                 
         else:
                 print("Temperature Check Error")
-                
+        
+
+	pub_root_gps.gpsf()        
         time.sleep(2)
         
 except KeyboardInterrupt: # if input 'Ctrl + C'

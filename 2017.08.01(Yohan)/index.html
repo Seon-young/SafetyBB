@@ -1,40 +1,16 @@
-<doctype html>
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>정보 기입 창</title>
-  </head>
-  <body>
-    <form name="join">
-      <h1>용도와 집주소를 입력하세요</h1>
-      <table border="1">
-        <tr>
-          <td><center>타입</center></td>
-         <td>
-           <center>
-             <select id = "Customertype" name = "Customertype">
-               <option>구분</<option>
-                 <option value="1">학부모</option>
-                 <option value="2">인솔자</option>
-            </select>
-           </center>
-         </td>
-        </tr>
-        <tr>
-          <td>부모의 주소(도로명주소)</td>
-          <td><input id="address" type="text" size="30" maxlength="30"></td>
-        </tr>
-      </table>
-    </form>
-   <input id="submitBtn" type="button" value="submit" method=post onclick="submitClick()"> <input type="reset" value="rewrite">
-   <input type="button" value="GPS" onClick="window.open('test.html')">
-
-</body>
-</html>
-
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/js/materialize.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/4.1.5/firebase.js"></script>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+<style type="text/css">
+ html { height : 100% }
+ body { height : 100%; margin: 3% 0% 0% 1.5%; padding: 0 }
+ #map_canvas { height : 100% }
+</style>
+  <script src="https://www.gstatic.com/firebasejs/4.1.5/firebase.js"></script>
 <script>
+
+  var auth, database, userInfo;
   // Initialize Firebase
   var config = {
     apiKey: "AIzaSyCWOhjgubSMNEavwmvC4QPNZOuzZ63Hyb4",
@@ -45,5 +21,152 @@
     messagingSenderId: "909521276736"
   };
   firebase.initializeApp(config);
+  auth = firebase.auth();
+  database = firebase.database(); // DB 초기화
+  var authProvider = new firebase.auth.GoogleAuthProvider();
+
+  // 인증여부
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      console.log(user);
+      console.log("success");
+      userInfo = user;
+    } else {
+      auth.signInWithPopup(authProvider);
+    }
+  });
 </script>
-<script src="index.js"></script>
+
+<script type = "text/javascript"
+ src = "https://maps.googleapis.com/maps/api/js">
+</script>
+<script type = "text/javascript">
+
+var map;
+var infowindow = new google.maps.InfoWindow();
+var marker =[];
+var geocoder;
+var geocodemarker = [];
+
+
+var GreenIcon = new google.maps.MarkerImage(
+   "http://labs.google.com/ridefinder/images/mm_20_green.png",
+   new google.maps.Size(12, 20),
+   new google.maps.Point(0, 0),
+   new google.maps.Point(6, 20));
+// 녹색 마커 아이콘을 정의하는 부분
+
+function initialize(){
+
+ var latlng = new google.maps.LatLng(37.5240220, 126.9265940);
+ var myOptions = {
+  zoom: 10,
+  center:latlng,
+  mapTypeId: google.maps.MapTypeId.ROADMAP
+ };
+
+ map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+ geocoder =  new google.maps.Geocoder();
+ google.maps.event.addListener(map, 'click', codeCoordinate);
+        /*아랫글에서 설명한 event를 이용 지도를 'click'하면 codeCoordinate함수를 실행합니다.
+           codeCoordinate함수는 클릭한 지점의 좌표를 가지고 주소를 찾는 함수입니다. */
+}
+
+function Setmarker(latLng) {
+
+  if (marker.length > 0)
+        {
+  marker[0].setMap(null);
+  }
+// marker.length는 marker라는 배열의 원소의 개수입니다.
+// 만약 이 개수가 0이 아니라면 marker를 map에 표시되지 않게 합니다.
+// 이는 다른 지점을 클릭할 때 기존의 마커를 제거하기 위함입니다.
+
+  marker = [];
+  marker.length = 0;
+// marker를 빈 배열로 만들고, marker 배열의 개수를 0개로 만들어 marker 배열을 초기화합니
+// 다.
+
+   marker.push(new google.maps.Marker({
+   position: latLng,
+   map: map
+  } ));
+// marker 배열에 새 marker object를 push 함수로 추가합니다.
+
+}
+/*클릭한 지점에 마커를 표시하는 함수입니다.
+   그런데 이 함수를 잘 봐야 하는 것이 바로 marker를 생성하지 않고 marker라는 배열 안에 Marker
+   obejct  원소를 계속 추가하고 있습니다. 이는 매번 클릭할 때마다 새로운 마커를 생성하기 위함입니
+   다. */
+
+//입력 받은 주소를 지오코딩 요청하고 결과를 마커로 지도에 표시합니다.
+function codeAddress(event) {
+  firebaseRef = firebase.database().ref();
+  var locationRef = database.ref('Users/' + userInfo.uid + '/' + 'address')
+    .once('value').then(function(snapshot){
+      console.log(snapshot.val());
+      var address = snapshot.val();
+      address = JSON.stringify(address);
+
+            //지오코딩하는 부분입니다.
+      geocoder.geocode( {'address': address}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK)  //Geocoding이 성공적이라면,
+      {
+       alert(results.length + "개의 결과를 찾았습니다.");
+       //결과의 개수를 표시하는 창을 띄웁니다. alert 함수는 알림창 함수입니다.
+       for(var i=0;i<results.length;i++)
+       {
+        map.setCenter(results[i].geometry.location);
+        geocodemarker.push(new google.maps.Marker({
+         center: results[i].geometry.location,
+         position: results[i].geometry.location,
+         icon: GreenIcon,
+         map: map
+        }));
+       }
+                            //결과가 여러 개일 수 있기 때문에 모든 결과를 지도에 marker에 표시합니다.
+      }
+      else
+      { alert("Geocode was not successful for the following reason: " + status);
+      }
+      });
+    })
+ if (geocodemarker.length > 0)
+ {
+  for (var i=0;i<geocodemarker.length ;i++ )
+  {
+   geocodemarker[i].setMap(null);
+  }
+  geocodemarker =[];
+  geocodemarker.length = 0;
+ }
+}
+
+//클릭 이벤트 발생 시 그 좌표를 주소로 변환하는 함수입니다.
+function codeCoordinate(event) {
+
+ Setmarker(event.latLng);
+        //이벤트 발생 시 그 좌표에 마커를 생성합니다.
+
+        // 좌표를 받아 reverse geocoding(좌표를 주소로 바꾸기)를 실행합니다.
+ geocoder.geocode({'latLng' : event.latLng}, function(results, status) {
+  if (status == google.maps.GeocoderStatus.OK)  {
+   if (results[1])
+   {
+    infowindow.setContent(results[1].formatted_address);
+    infowindow.open(map,marker[0]);
+                                //infowindow로 주소를 표시합니다.
+   }
+  }
+ });
+}
+//
+
+</script>
+</head>
+<body onload="initialize()">
+
+ <div id="map_canvas" style="width:80%; height:60%"></div>
+ <input name="submit" type="submit" value="Search" onclick='codeAddress(); return false;' /> </p>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Geocode App</title>
+</head>
+<body>
+  <div class="container">
+    <div id="formatted-address"></div>
+    <div id="address-components"></div>
+    <div id="geometry"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/4.1.5/firebase.js"></script>
+  <script type = "text/javascript" src = "http://maps.googleapis.com/maps/api/js">
+  </script>
+  <script>
+
+      var auth, database, userInfo;
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyDWLA5uAgTpvrCOZx9tcmuylh6YJ7cEU_M",
+        authDomain: "safetybb-65f64.firebaseapp.com",
+        databaseURL: "https://safetybb-65f64.firebaseio.com",
+        projectId: "safetybb-65f64",
+        storageBucket: "safetybb-65f64.appspot.com",
+        messagingSenderId: "909521276736"
+      };
+      firebase.initializeApp(config);
+      auth = firebase.auth();
+      database = firebase.database(); // DB 초기화
+      var authProvider = new firebase.auth.GoogleAuthProvider();
+
+      // 인증여부
+      auth.onAuthStateChanged(function(user){
+        if(user){
+          console.log("success");
+          userInfo = user;
+          get_location_list();
+        } else {
+          auth.signInWithPopup(authProvider);
+        }
+      });
+
+      function get_location_list(){
+        var firebaseRef = firebase.database().ref();
+        var GeocodingRef = database.ref('Users/' + userInfo.uid + '/' + 'address')
+          .once('value').then(function(snapshot)
+          {
+            console.log(snapshot.val());
+            var address = snapshot.val();
+            faddr = JSON.stringify(address);
+            var geocoder = new google.maps.Geocoder();
+          	geocoder.geocode({ 'address': faddr}, function(results, status) {
+        		if (status == google.maps.GeocoderStatus.OK) {
+        			var faddr_lat = results[0].geometry.location.lat();	//위도
+        			var faddr_lng = results[0].geometry.location.lng();	//경도
+              firebaseRef.child('Users/' + userInfo.uid + '/' + 'Location').child("Latitude").set(faddr_lat);
+              firebaseRef.child('Users/' + userInfo.uid + '/' + 'Location').child("Longitute").set(faddr_lng);
+        		} else {
+        			var faddr_lat = "";
+        			var faddr_lng = "";
+        		}
+        		alert('주소 : ' + faddr + '\n\n위도 : ' + faddr_lat + '\n\n경도 : ' + faddr_lng);
+        		return;
+        	  });
+          });
+      }
+  </script>
+<input type="button" value="GPS" onClick="window.open('test.html')">
+</body>
+</html>

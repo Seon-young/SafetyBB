@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<script src="https://www.gstatic.com/firebasejs/4.2.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAX3zsgsAVgY2FoikSWi8Ou130mPv2RrFA",
+    authDomain: "testfirebase-88dad.firebaseapp.com",
+    databaseURL: "https://testfirebase-88dad.firebaseio.com",
+    projectId: "testfirebase-88dad",
+    storageBucket: "testfirebase-88dad.appspot.com",
+    messagingSenderId: "727840492650"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<script type="text/javascript">
+	/*
+  function writeUserData2(root2button,y,m,d,h,mm,s) {
+  //var uid = firebase.auth().currentUser.uid;
+  var uid = "root2"
+  firebase.database().ref('/Button' + '/' + uid).set({
+    button : "on",
+    time : y + "-" + m + "-" + d + " " + h + ":" + mm + ":" + s
+  });
+}
+*/
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+  // Create a client instance
+  client = new Paho.MQTT.Client("m11.cloudmqtt.com", 31541, "web_" + parseInt(Math.random() * 100, 10));//주영 MQTT 실험
+  //client = new Paho.MQTT.Client("m13.cloudmqtt.com", 39226, "web_" + parseInt(Math.random() * 100, 10));//선영이 MQTT
+
+  // set callback handlers
+  client.onConnectionLost = onConnectionLost;
+  client.onMessageArrived = onMessageArrived;
+
+  var options = {
+    useSSL: true,
+    userName: "root",
+    password: "root",
+    onSuccess:onConnect,
+    onFailure:doFail
+  }
+
+  // connect the client
+  client.connect(options);
+
+  // called when the client connects
+  function onConnect() {
+    // Once a connection has been made, make a subscription and send a message.
+    console.log("onConnect");
+    client.subscribe("+/Button");
+  }
+
+  function doFail(e){
+    console.log(e);
+  }
+
+  // called when the client loses its connection
+  function onConnectionLost(responseObject) {
+    if (responseObject.errorCode !== 0) {
+      console.log("onConnectionLost:"+responseObject.errorMessage);
+    }
+  }
+
+  // called when a message arrives
+  var str_usernick; //root, root2 제품명
+  function onMessageArrived(message) {
+    console.log("onMessageArrived:"+message.payloadString);
+    str_usernick = message.destinationName.split('/');
+    var time =new Date();
+
+    var y = time.getFullYear();
+    var m = time.getMonth() + 1;
+    var d = time.getDate();
+
+    var h = time.getHours();
+    var mm = time.getMinutes();
+    var s = time.getSeconds();
+
+    document.getElementById('timeprint').innerHTML= y + "-" + m + "-" + d + " " + h + ":" + mm + ":" + s;
+/*
+    if(message.destinationName=="root/Button"){
+      rootbutton = message.payloadString;
+      writeUserData(rootbutton,y,m,d,h,mm,s);
+    	document.getElementById('announce').innerHTML="root Button on";
+    }
+
+    if(message.destinationName=="root2/Button"){
+      root2button = Number(message.payloadString);
+      writeUserData2(root2button,y,m,d,h,mm,s);
+      document.getElementById('announce2').innerHTML="root2 Button on";
+    }
+*/
+    rootbutton = message.payloadString;
+    writeUserData(rootbutton,y,m,d,h,mm,s);
+    document.getElementById('announce').innerHTML=str_usernick[0]+" Button on";
+
+  }
+
+  function writeUserData(rootbutton,y,m,d,h,mm,s) {
+  //var uid = firebase.auth().currentUser.uid;
+  var uid = str_usernick[0];
+  firebase.database().ref('/Button' + '/' + uid).set({
+    button : "on",
+    time : y + "-" + m + "-" + d + " " + h + ":" + mm + ":" + s
+  });
+}
+</script>
+
+<head>
+	<title>Button DB</title>
+</head>
+<body>
+
+ <div id="announce"></div>
+ <div id="announce2"></div>
+ <div></div>
+
+ <div id = "timeprint"></div>
+
+</body>
+</html>
